@@ -1,0 +1,71 @@
+/* src/LandingPage.css */
+.landing-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+  color: white;
+  text-align: center;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
+}
+
+.landing-content {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 50px;
+  border-radius: 15px;
+  backdrop-filter: blur(10px);
+  max-width: 800px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+.landing-title {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  font-weight: bold;
+}
+
+.landing-subtitle {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  line-height: 1.6;
+  color: #e0e0e0;
+}
+
+.btn-masuk-peta {
+  background-color: #ff9800;
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 8px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 0.3s ease;
+}
+
+.btn-masuk-peta:hover {
+  background-color: #f57c00;
+}
+
+.features-grid {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 40px;
+  gap: 20px;
+}
+
+.feature-card {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 20px;
+  border-radius: 10px;
+  flex: 1;
+}
+
+.feature-card h3 {
+  margin-top: 0;
+  color: #ffb74d;
+}

@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Peta SIG Interaktif</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+
+    <style>
+        #map { height: 100vh; }
+
+        .form-box {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            z-index: 1000;
+            background: white;
+            padding: 12px;
+            border-radius: 8px;
+            width: 260px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+        }
+
+        input {
+            width: 100%;
+            margin-bottom: 5px;
+            padding: 5px;
+        }
+
+        button {
+            width: 100%;
+            padding: 6px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #27ae60;
+        }
+    </style>
+</head>
+<body>
+
+<div class="form-box">
+    <h4>Tambah / Edit Fasilitas</h4>
+
+    <input type="text" id="nama" placeholder="Nama">
+    <input type="text" id="jenis" placeholder="Jenis">
+    <input type="text" id="alamat" placeholder="Alamat">
+
+    <input type="text" id="lat" placeholder="Latitude" readonly>
+    <input type="text" id="lng" placeholder="Longitude" readonly>
+
+    <button onclick="tambahFasilitas()">Simpan</button>
+</div>
+
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+<script>
+    var map = L.map('map').setView([-5.35, 105.29], 13);
+    let editId = null;
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // ========================
+    // WILAYAH
+    // ========================
+    fetch("http://127.0.0.1:8000/wilayah-geojson")
+        .then(res => res.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: { color: "blue", fillOpacity: 0.3 },
+                onEachFeature: (f, l) => l.bindPopup("Wilayah: " + f.properties.nama)
+            }).addTo(map);
+        });
+
+    // ========================
+    // JALAN
+    // ========================
+    fetch("http://127.0.0.1:8000/jalan-geojson")
+        .then(res => res.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: { color: "red" },
+                onEachFeature: (f, l) => l.bindPopup("Jalan: " + f.properties.nama)
+            }).addTo(map);
+        });
+
+    // ========================
+    // LOAD FASILITAS
+    // ========================
+    function loadFasilitas() {
+        fetch("http://127.0.0.1:8000/fasilitas-geojson")
+            .then(res => res.json())
+            .then(data => {
+                L.geoJSON(data, {
+                    onEachFeature: function(feature, layer) {
+                        const p = feature.properties;
+
+                        layer.bindPopup(`
+                            <b>${p.nama}</b><br>
+                            ${p.jenis}<br>
+                            ${p.alamat}<br><br>
+
+                            <button onclick="editFasilitas(${p.id}, '${p.nama}', '${p.jenis}', '${p.alamat}')">Edit</button>
+                            <button onclick="hapusFasilitas(${p.id})">Hapus</button>
+                        `);
+                    }
+                }).addTo(map);
+            });
+    }
+
+    loadFasilitas();
+
+    // ========================
+    // DELETE
+    // ========================
+    function hapusFasilitas(id) {
+        if (confirm("Yakin hapus?")) {
+            fetch(`http://127.0.0.1:8000/fasilitas/${id}`, {
+                method: "DELETE"
+            }).then(() => {
+                alert("Data dihapus");
+                location.reload();
+            });
+        }
+    }
+
+    // ========================
+    // EDIT
+    // ========================
+    function editFasilitas(id, nama, jenis, alamat) {
+        document.getElementById("nama").value = nama;
+        document.getElementById("jenis").value = jenis;
+        document.getElementById("alamat").value = alamat;
+
+        editId = id;
+    }
+
+    // ========================
+    // KLIK MAP
+    // ========================
+    map.on("click", function(e) {
+        document.getElementById("lat").value = e.latlng.lat;
+        document.getElementById("lng").value = e.latlng.lng;
+    });
+
+    // ========================
+    // CREATE + UPDATE
+    // ========================
+    function tambahFasilitas() {
+        const data = {
+            nama: document.getElementById("nama").value,
+            jenis: document.getElementById("jenis").value,
+            alamat: document.getElementById("alamat").value,
+            latitude: parseFloat(document.getElementById("lat").value),
+            longitude: parseFloat(document.getElementById("lng").value)
+        };
+
+        let url = "http://127.0.0.1:8000/fasilitas";
+        let method = "POST";
+
+        if (editId !== null) {
+            url = `http://127.0.0.1:8000/fasilitas/${editId}`;
+            method = "PUT";
+        }
+
+        fetch(url, {
+            method: method,
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        })
+        .then(res => res.json())
+        .then(() => {
+            alert("Berhasil!");
+            editId = null;
+            location.reload();
+        });
+    }
+</script>
+
+</body>
+</html>
